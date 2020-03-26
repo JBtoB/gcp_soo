@@ -1,0 +1,38 @@
+[
+  {
+    "name": "item_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code1", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code1_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code2", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code2_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code3", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code3_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]

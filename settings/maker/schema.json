@@ -1,0 +1,14 @@
+[
+  {
+    "name": "maker_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "maker_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]

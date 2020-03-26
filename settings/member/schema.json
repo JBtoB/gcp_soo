@@ -1,0 +1,30 @@
+[
+  {
+    "name": "member_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "sex", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "birthyear", 
+    "type": "INT64"
+  }, 
+  {
+    "name": "zip", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "belong", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "admission_date", 
+    "type": "INT64"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]
