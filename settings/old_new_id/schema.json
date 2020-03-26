@@ -1,0 +1,14 @@
+[
+  {
+    "name": "old_ID", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "new_ID", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]

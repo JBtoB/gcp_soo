@@ -1,0 +1,38 @@
+[
+    {
+      "name": "soo_code", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "soo_code_name", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "soo_code1", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "soo_code1_name", 
+      "type": "STRING"
+    },
+    {
+      "name": "soo_code2", 
+      "type": "STRING"
+    }, 
+    {    
+      "name": "soo_code2_name", 
+      "type": "STRING"
+    },
+    {
+      "name": "soo_code3", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "soo_code3_name", 
+      "type": "STRING"
+    },           
+    {
+      "name": "dummy", 
+      "type": "STRING"
+    }
+  ]

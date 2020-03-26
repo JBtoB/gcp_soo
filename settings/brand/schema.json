@@ -1,0 +1,14 @@
+[
+    {
+      "name": "brand_code", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "brand_name", 
+      "type": "STRING"
+    }, 
+    {
+      "name": "dummy", 
+      "type": "STRING"
+    }
+  ]

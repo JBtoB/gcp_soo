@@ -1,0 +1,34 @@
+[
+  {
+    "name": "jan_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "jan_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "item_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "jbtob_chk", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "maker_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "brand_code", 
+    "type": "STRING"
+  },
+  {
+    "name": "SOO_item", 
+    "type": "STRING"
+  },
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]

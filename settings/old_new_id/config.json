@@ -1,0 +1,18 @@
+{
+	"destinationTable": {
+	"datasetId": "pos_analysis",
+	"tableId": "old_new_id"
+	},
+	"sourceFormat": "CSV",
+	"autodetect": "false",
+	"createDisposition": "CREATE_IF_NEEDED",
+	"writeDisposition": "WRITE_APPEND",
+	"skipLeadingRows": "0",
+	"encoding": "UTF-8",
+	"maxBadRecords": "0",
+	"allowQuotedNewlines": "true",
+	"allowJaggedRows": "true",
+	"ignoreUnknownValues": "true",
+	"nullMarker": "",
+	"quote": "'"
+}

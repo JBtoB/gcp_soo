@@ -1,0 +1,54 @@
+[
+  {
+    "name": "office_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "office_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "region_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "region_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "zone_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "zone_name", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "size", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "location", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "store_type", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "sub_type", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "pharmacy", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "alcohol", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]

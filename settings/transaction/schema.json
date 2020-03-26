@@ -1,0 +1,46 @@
+[
+  {
+    "name": "purchase_date", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "purchase_time", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "office", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "member", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "jan_code", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "amount", 
+    "type": "NUMERIC"
+  }, 
+  {
+    "name": "quantity", 
+    "type": "NUMERIC"
+  }, 
+  {
+    "name": "profit", 
+    "type": "NUMERIC"
+  }, 
+  {
+    "name": "posnumber", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "sheetnumber", 
+    "type": "STRING"
+  }, 
+  {
+    "name": "dummy", 
+    "type": "STRING"
+  }
+]
