@@ -194,12 +194,16 @@ def ValidDir(bucket, name):
     path = "gs://{}/{}".format(bucket, name)
     print(path)
     file_format = name.split(".", 1)
-
+    
     #dataのフォルダに入れているかの確認
+    if(name.split("/")[0]) == "data":
+        logging.info("Input folder: OK")
+    else:
+        raise Exception("Input Folder: {} is wrong.".format(name.split("/")[0]))
 
     #csvファイルでgzip圧縮をしているかの確認
     if file_format[1] == "csv.gz":
-        print("File format: OK")
+        logging.info("File format: OK")
     else:
         raise Exception("File format: {} is not used.".format(file_format[1]))
 
