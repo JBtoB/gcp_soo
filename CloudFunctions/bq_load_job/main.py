@@ -21,7 +21,7 @@ def main(event, context):
     file_name = event["name"]
 
     # アップロードされたGCS ObjectがBigQueryにアップロードするものかのチェック
-    uri = ValidDir(bucket_name, file_name)
+    uri = valid_dir(bucket_name, file_name)
 
     # GCS上の設定ファイルとスキーマファイルを取得
     schema, config, kind_name, update_date = check_setting_files_exist(bucket_name,file_name)
@@ -178,7 +178,7 @@ def setting_options(load_job_config, schema, config, kind_name, update_date):
     return load_job_config, dataset_id, table_id  
 
 
-def ValidDir(bucket, name):
+def valid_dir(bucket, name):
     '''
     GCSトリガーから送られてきたアップロードされたオブジェクトのGCSパスが
     BigQueryロードジョブの対象ファイルかを判定する関数

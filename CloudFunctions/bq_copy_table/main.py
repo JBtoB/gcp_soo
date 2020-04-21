@@ -5,6 +5,7 @@ Looker 接続用のデータセットから、指定したテーブルを
 '''
 
 from google.cloud import bigquery, storage
+from google.cloud.exceptions import NotFound
 import json
 import logging
 import os
@@ -14,8 +15,10 @@ def main(request):
 
     # -----------------------------------------------環境変数
     project_id = get_enviroment_value("GCP_PROJECT")
-    # -----------------------------------------------Schedulerに設定した関数
+    # -----------------------------------------------Schedulerに設定した変数
+    source_dataset = get_request_value_or_raise(request,"source_dataset")
     target_dataset = get_request_value_or_raise(request,"target_dataset")
+    table_names = get_request_value_or_raise(request, "table_names")
     # -----------------------------------------------
     
 
@@ -25,40 +28,36 @@ def main(request):
     create_dataset(client, target_dataset)
    
     # コピージョブの実行
-    copy_tables(client, request)
+    copy_tables(client, project_id, source_dataset, target_dataset, table_names)
 
 
-def copy_tables(client, request):
+def copy_tables(client, project_id, source_dataset, target_dataset, table_names):
     '''
     テーブルコピーを実施する関数
 
     Args:
     client (google.cloud.bigquery.client.Client): bigqueryのクライアント
-    request (dict): Cloud Schedulerから送られてきたHTTPリクエストボディ
+    project_id (STRING): GCPのプロジェクトID
+    source_dataset (STRING): コピー元のデータセット名
+    target_dataset (STRING): コピー先のデータセット名
+    table_names (list): コピーするテーブル名のリスト
     Return:
     None
     '''
 
-    # -----------------------------------------------環境変数
-    project_id = get_enviroment_value("GCP_PROJECT")
-    # -----------------------------------------------Schedulerに設定した関数
-    source_dataset = get_request_value_or_raise(request,"source_dataset")
-    target_dataset = get_request_value_or_raise(request,"target_dataset")
-    table_name = get_request_value_or_raise(request, "table_name")
-    # -----------------------------------------------
     # コピージョブの準備
     job_config = bigquery.CopyJobConfig()
     job_config.write_disposition = "WRITE_TRUNCATE"
     
     #複数テーブルのコピー実施
-    for name in table_name:
+    for table_name in table_names:
     
         # コピー元とコピー先の名前の作成
-        source_table = "{}.{}.{}".format(project_id,source_dataset,name)
-        target_table = "{}.{}.{}".format(project_id,target_dataset,name)
+        source_table = "{}.{}.{}".format(project_id,source_dataset,table_name)
+        target_table = "{}.{}.{}".format(project_id,target_dataset,table_name)
         try:
             # コピー元のテーブルがあるかの確認。なければ、ログに出力
-            table_ref = client.dataset(source_dataset).table(name)
+            table_ref = client.dataset(source_dataset).table(table_name)
             table_check = client.get_table(table_ref)
             # コピージョブの作成
             copy_job = client.copy_table(
@@ -67,8 +66,8 @@ def copy_tables(client, request):
                 job_config=job_config)
             #　コピージョブの実施
             copy_job.result()
-        except:
-            logging.info(name + " is not exist")
+        except NotFound:
+            logging.info(table_name + " is not exist")
     return    
 
 
@@ -89,11 +88,10 @@ def  create_dataset(client, dataset):
         # 書き込み先であるBigQueryのデータセットが存在するかの確認。
         client.get_dataset(dataset_ref)
         logging.info(dataset + "is already exist")
-    except:
+    except NotFound:
         # データセットがない場合は新たに作成する。
         bigquery_client = bigquery.Dataset(dataset_ref)
         create_dataset = client.create_dataset(bigquery_client)
-
     return
 
 
