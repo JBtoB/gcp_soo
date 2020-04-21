@@ -22,8 +22,7 @@ BEGIN
       tran.member = master_member.member_code
     LEFT JOIN
       `looker.jan` AS master_jan
-    USING
-      (jan_code)
+    on tran.jan_code = master_jan.jan_code
     LEFT JOIN
       `looker.item` AS master_item
     ON
