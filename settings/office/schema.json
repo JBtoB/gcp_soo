@@ -1,54 +1,67 @@
 [
   {
     "name": "office_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "office_name", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "region_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "region_name", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "zone_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "zone_name", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "size", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "location", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "store_type", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "sub_type", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "pharmacy", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "alcohol", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "dummy", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }
 ]

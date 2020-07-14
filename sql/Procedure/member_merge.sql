@@ -1,6 +1,6 @@
 CREATE OR REPLACE PROCEDURE `looker_procedure.member_merge`()
 BEGIN
-CREATE OR REPLACE TABLE `looker.member_source` AS (
+CREATE OR REPLACE TABLE `looker.member_source_tmp` AS (
       SELECT
         member_code,
         sex,
@@ -16,7 +16,7 @@ CREATE OR REPLACE TABLE `looker.member_source` AS (
     MERGE
       `looker.member` AS m2
     USING
-      `looker.member_source` AS m1
+      `looker.member_source_tmp` AS m1
     ON
       m1.member_code = m2.member_code
       WHEN MATCHED THEN UPDATE SET

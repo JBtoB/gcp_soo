@@ -1,6 +1,6 @@
 {
 	"destinationTable": {
-	"datasetId": "pos_analysis",
+	"datasetId": "looker",
 	"tableId": "transaction_source"
 	},
 	"sourceFormat": "CSV",

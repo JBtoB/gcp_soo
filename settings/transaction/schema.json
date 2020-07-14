@@ -1,46 +1,57 @@
 [
   {
     "name": "purchase_date", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "purchase_time", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "office", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "member", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "jan_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "amount", 
-    "type": "NUMERIC"
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "quantity", 
-    "type": "NUMERIC"
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "profit", 
-    "type": "NUMERIC"
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "posnumber", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "sheetnumber", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "dummy", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }
 ]

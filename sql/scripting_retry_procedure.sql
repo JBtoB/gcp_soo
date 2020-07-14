@@ -13,6 +13,6 @@ IF (check_error is not null
    OR job_state != 'DONE')
    THEN
 
-    CALL scripting_procedure()
+    CALL looker_procedure.scripting_procedure();
     
 END IF;
