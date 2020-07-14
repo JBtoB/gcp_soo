@@ -1,49 +1,19 @@
 # standard SQL
 
-# 変数の宣言
-DECLARE check_member_exist, check_jan_exist, check_update_exist INT64;
-
-# memberテーブルが存在するかの確認用
-SET 
-  check_member_exist =(
-    SELECT size_bytes
-    FROM pos_analysis.__TABLES__ 
-    WHERE table_id='member'
-  );
-
-# janテーブルが存在するかの確認用
-SET 
-  check_jan_exist = (
-    SELECT size_bytes
-    FROM pos_analysis.__TABLES__ 
-    WHERE table_id='jan'
-  );
-
-# updateテーブルが存在するかの確認用
-SET 
-  check_update_exist = (
-    SELECT size_bytes
-    FROM pos_analysis.__TABLES__ 
-    WHERE table_id='update'
-  );
-
-# ひとつ前の同じSQLが正常に終了した場合には以下の処理を行わず、
-#エラーが起きていた場合には、洗替処理を再度行う   
-    # janテーブルがない場合には作成
-    IF (check_jan_exist is null)
-        THEN
-          CREATE TABLE `pos_analysis.jan`
-            (
-              jan_code STRING,
-              jan_name STRING,
-              item_code STRING,
-              jbtob_chk STRING,
-              maker_code STRING,
-              brand_code STRING,
-              SOO_item STRING,
-              dummy STRING
-              );
-    END IF;  
+# janテーブルがない場合には作成
+    
+    CREATE TABLE IF NOT EXISTS `pos_analysis.jan`
+    (
+    jan_code STRING,
+    jan_name STRING,
+    item_code STRING,
+    jbtob_chk STRING,
+    maker_code STRING,
+    brand_code STRING,
+    SOO_item STRING,
+    dummy STRING
+    );
+    
     
     # 洗替のために、janの中間テーブルを使用してjanテーブルに対してMERGE処理をする
     MERGE
@@ -74,18 +44,17 @@ SET
       (jan_code,item_code,jbtob_chk,maker_code,brand_code,SOO_item,dummy);
       
       # memberテーブルがない場合には作成
-      IF check_member_exist is null
-        THEN
-          CREATE TABLE `pos_analysis.member`
-            (
-              member_code STRING,
-              sex STRING,
-              birthyear INT64,
-              zip STRING,
-              belong STRING,
-              admission_date DATE,
-              dummy STRING);
-      END IF;
+
+    CREATE TABLE IF NOT EXISTS `pos_analysis.member`
+      (
+      member_code STRING,
+      sex STRING,
+      birthyear INT64,
+      zip STRING,
+      belong STRING,
+      admission_date DATE,
+      dummy STRING);
+
     
     CREATE OR REPLACE TABLE `pos_analysis.member_source` AS (
       SELECT
@@ -128,7 +97,7 @@ SET
     MERGE pos_analysis.old_new_id id1
       USING pos_analysis.old_new_id id2
         ON id1.old_ID = id2.old_ID 
-      WHEN MATCHED AND id1.new_ID < id2.new_ID
+      WHEN MATCHED AND id1.new_ID <= id2.new_ID
       THEN
       DELETE;
 
@@ -140,7 +109,7 @@ SET
     # 2 3
     # に洗替する処理
     MERGE pos_analysis.old_new_id id1
-      USING pos_analysis.old_new_id id1
+      USING pos_analysis.old_new_id id2
         ON id1.new_ID = id2.old_ID 
       WHEN MATCHED AND id1.new_ID < id2.new_ID
       THEN
@@ -228,18 +197,16 @@ SET
       master_jan.SOO_item = master_SOO_item.soo_code;
       
     # updateテーブルがなければ作成
+    # この部分のみJSTに準じた時間にしている 
+    CREATE TABLE IF NOT EXISTS`pos_analysis.update` AS
+      (SELECT
+        TIMESTAMP_ADD(CURRENT_TIMESTAMP, INTERVAL 9 hour)  AS update_timestamp
+      );
+
+    # 最後にupdate テーブルに現在の時間をインサート
     # この部分のみJSTに準じた時間にしている
-    IF check_update_exist is null
-      THEN  
-        CREATE OR REPLACE TABLE `pos_analysis.update` AS
-        (SELECT
-          TIMESTAMP_ADD(CURRENT_TIMESTAMP, INTERVAL 9 hour)  AS update_timestamp
-        );
-    ELSE
-        # 最後にupdate テーブルに現在の時間をインサート
-        # この部分のみJSTに準じた時間にしている
-        INSERT  `pos_analysis.update`
-        (update_timestamp)
-        VALUES
-        (TIMESTAMP_ADD(CURRENT_TIMESTAMP, INTERVAL 9 hour));
-    END IF;
+    INSERT  `pos_analysis.update`
+    (update_timestamp)
+    VALUES
+    (TIMESTAMP_ADD(CURRENT_TIMESTAMP, INTERVAL 9 hour));
+  

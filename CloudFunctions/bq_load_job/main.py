@@ -11,7 +11,7 @@ import logging
 import os
 
 
-def bq_load_job(event, context):
+def main(event, context):
 
     # -----------------------------------------------環境変数
     project_id = get_enviroment_value("GCP_PROJECT")
@@ -21,18 +21,18 @@ def bq_load_job(event, context):
     file_name = event["name"]
 
     # アップロードされたGCS ObjectがBigQueryにアップロードするものかのチェック
-    uri = ValidDir(bucket_name, file_name)
+    uri = valid_dir(bucket_name, file_name)
 
     # GCS上の設定ファイルとスキーマファイルを取得
-    schema, config, kind_name, update_date = CheckSettingFilesExist(bucket_name,file_name)
+    schema, config, kind_name, update_date = check_setting_files_exist(bucket_name,file_name)
 
     # GCS上の設定ファイルとスキーマファイルを利用して、ロードジョブの設定を行う
     load_job_config = bigquery.LoadJobConfig()
-    job_config, dataset_id, table_id = SettingOptions(load_job_config, schema, config, kind_name, update_date)
+    job_config, dataset_id, table_id = setting_options(load_job_config, schema, config, kind_name, update_date)
 
     # 書き込み先のBQのDatasetが存在するかの確認。なければ作成する。
     client = bigquery.Client(project_id)
-    CreateDataset(client, dataset_id)
+    create_dataset(client, dataset_id)
     dataset = client.dataset(dataset_id)
 
     # ロードジョブの設定
@@ -42,7 +42,7 @@ def bq_load_job(event, context):
     load_job.running()
 
 
-def CheckSettingFilesExist(bucket_name,file_name):
+def check_setting_files_exist(bucket_name,file_name):
     """
      GCSにあるconfig.jsonとschema.jsonがあるかを確認、
      確認後に取得する。
@@ -98,7 +98,7 @@ def CheckSettingFilesExist(bucket_name,file_name):
     return schema, config, kind_name, update_date
 
 
-def CreateDataset(client, dataset):
+def create_dataset(client, dataset):
     '''
     データセットが存在しない場合に作成を行う関数
 
@@ -122,7 +122,7 @@ def CreateDataset(client, dataset):
 
     return
 
-def SettingOptions(load_job_config, schema, config, kind_name, update_date):
+def setting_options(load_job_config, schema, config, kind_name, update_date):
     """
      GCSにあるconfig.jsonとschema.jsonを取得・利用し、
      BigQueryのロードジョブの設定を行う。
@@ -178,7 +178,7 @@ def SettingOptions(load_job_config, schema, config, kind_name, update_date):
     return load_job_config, dataset_id, table_id  
 
 
-def ValidDir(bucket, name):
+def valid_dir(bucket, name):
     '''
     GCSトリガーから送られてきたアップロードされたオブジェクトのGCSパスが
     BigQueryロードジョブの対象ファイルかを判定する関数
@@ -199,13 +199,13 @@ def ValidDir(bucket, name):
     if(name.split("/")[0]) == "data":
         logging.info("Input folder: OK")
     else:
-        raise Exception("Input Folder: {} is wrong.".format(name.split("/")[0]))
+        logging.error("Input Folder: {} is wrong.".format(name.split("/")[0]))
 
     #csvファイルでgzip圧縮をしているかの確認
     if file_format[1] == "csv.gz":
         logging.info("File format: OK")
     else:
-        raise Exception("File format: {} is not used.".format(file_format[1]))
+        logging.error("File format: {} is not used.".format(file_format[1]))
 
     return path
 
@@ -225,6 +225,6 @@ def get_enviroment_value(name):
 
     # 環境変数が存在しない場合の例外処理
     if not env_value:
-        raise Exception("Enviroment Value {} is not set".format(name))
+        logging.error("Enviroment Value {} is not set".format(name))
 
     return env_value
