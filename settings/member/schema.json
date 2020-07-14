@@ -1,15 +1,18 @@
 [
   {
     "name": "member_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "sex", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "birthyear", 
-    "type": "INT64"
+    "type": "INT64",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "zip", 
@@ -25,6 +28,7 @@
   }, 
   {
     "name": "dummy", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }
 ]

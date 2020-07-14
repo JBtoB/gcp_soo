@@ -1,11 +1,13 @@
 [
   {
     "name": "jan_code", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "jan_name", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }, 
   {
     "name": "item_code", 
@@ -29,6 +31,7 @@
   },
   {
     "name": "dummy", 
-    "type": "STRING"
+    "type": "STRING",
+    "mode": "REQUIRED"
   }
 ]

@@ -1,15 +1,15 @@
 {
 	"destinationTable": {
-	"datasetId": "pos_analysis",
-	"tableId": "old_new_id"
+	"datasetId": "looker",
+	"tableId": "old_new_id_source"
 	},
 	"sourceFormat": "CSV",
 	"autodetect": "false",
 	"createDisposition": "CREATE_IF_NEEDED",
-	"writeDisposition": "WRITE_APPEND",
+	"writeDisposition": "WRITE_TRUNCATE",
 	"skipLeadingRows": "0",
 	"encoding": "UTF-8",
-	"maxBadRecords": "0",
+	"maxBadRecords": "10",
 	"allowQuotedNewlines": "true",
 	"allowJaggedRows": "true",
 	"ignoreUnknownValues": "true",

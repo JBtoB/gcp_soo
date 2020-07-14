@@ -8,7 +8,7 @@ BEGIN
     MERGE looker.old_new_id id1
       USING looker.old_new_id id2
         ON id1.old_ID = id2.old_ID 
-      WHEN MATCHED AND id1.new_ID <= id2.new_ID
+      WHEN MATCHED AND id1.new_ID < id2.new_ID
       THEN
       DELETE;
 END;      

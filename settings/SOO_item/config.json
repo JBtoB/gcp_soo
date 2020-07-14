@@ -1,6 +1,6 @@
 {
 	"destinationTable": {
-	"datasetId": "pos_analysis",
+	"datasetId": "looker",
 	"tableId": "SOO_item"
 	},
 	"sourceFormat": "CSV",
@@ -9,7 +9,7 @@
 	"writeDisposition": "WRITE_TRUNCATE",
 	"skipLeadingRows": "0",
 	"encoding": "UTF-8",
-	"maxBadRecords": "0",
+	"maxBadRecords": "70",
 	"allowQuotedNewlines": "true",
 	"allowJaggedRows": "true",
 	"ignoreUnknownValues": "true",
