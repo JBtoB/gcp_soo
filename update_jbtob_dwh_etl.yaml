@@ -211,6 +211,7 @@ steps:
     --params='{"query": "CALL looker_procedure.scripting_procedure();"}' \
     --schedule="everyday 22:00" \
     --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com \
     $(cat _CREATE_POS_DATA_RESOUCE_NAME)
 
 # Scheduled Queryのcreate_pos_data_retry1を更新
@@ -225,6 +226,7 @@ steps:
     --params='{"query": "CALL looker_procedure.scripting_retry_procedure();"}' \
     --schedule="everyday 22:40" \
     --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com \
     $(cat _CREATE_POS_DATA_RETRY1_RESOUCE_NAME)
 
 # Scheduled Queryのcreate_pos_data_retry2を更新
@@ -239,6 +241,7 @@ steps:
     --params='{"query": "CALL looker_procedure.scripting_retry_procedure();"}' \
     --schedule="everyday 23:20" \
     --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com \
     $(cat _CREATE_POS_DATA_RETRY2_RESOUCE_NAME)
 
 # Scheduled Queryのdelete_transaction_source_monthlyを更新
@@ -253,6 +256,7 @@ steps:
     --params='{"query": "CALL looker_procedure.delete_old_data_monthly();"}' \
     --schedule="first day of month 18:00" \
     --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com \
     $(cat _DELET_TRANSACTION_SOURCE_MONTHLY_RESOUCE_NAME)
 
 options:
