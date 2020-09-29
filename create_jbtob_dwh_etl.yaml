@@ -1,0 +1,297 @@
+steps:
+# -----------------------------------------------変数
+# TAGNAMEからproject_idの末尾を取得
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'echo "${TAG_NAME}" | sed "s/create-jbtob-looker-\(.*\)-.*-[0-9]*-[0-9]*/\1/g" > _JBTOB_PROJECT_NAME']
+
+# TAGNAMEから環境名を取得
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'echo "${TAG_NAME}" | sed "s/create-.*-\([^-]\{3\}\)-[0-9]*-[0-9]*/\1/g" > _ENV']
+
+# -----------------------------------------------Cloud Storage
+# Cloud Storage バケットにスキーマ・設定ファイルをインポート
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'gsutil -m cp -r ./settings/ gs://jbtob-$(cat _JBTOB_PROJECT_NAME)-from-sybase-$(cat _ENV)-setting/']
+
+# -----------------------------------------------Cloud Functions
+# Cloud Functions bq_load_jobのデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud functions deploy bq_load_job \
+    --entry-point=main \
+    --source=./CloudFunctions/bq_load_job \
+    --project=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --trigger-resource=jbtob-$(cat _JBTOB_PROJECT_NAME)-from-sybase-$(cat _ENV) \
+    --region=us-central1 \
+    --trigger-event=google.storage.object.finalize \
+    --runtime=python37 \
+    --timeout=540s
+
+# Cloud Functions bq_copy_jobのデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud functions deploy bq_copy_job \
+    --entry-point=main \
+    --source=./CloudFunctions/bq_copy_table \
+    --project=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --trigger-http \
+    --region=us-central1 \
+    --runtime=python37 \
+    --timeout=540s
+
+# -----------------------------------------------Cloud Sheduler
+# bq_copy_jobのURLを取得
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'gcloud functions describe bq_copy_job --format="value(httpsTrigger.url)" --project=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) > _BQ_COPY_JOB_URL']
+
+# Cloud Scheduler bq_copy_job_kickerのデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud scheduler jobs create http bq_copy_job_kicker \
+    --schedule="0 9 * * *" \
+    --uri=$(cat _BQ_COPY_JOB_URL) \
+    --http-method=POST \
+    --time-zone=Asia/Tokyo \
+    --message-body="{\"target_project_id\":\"jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)\", \"target_dataset\":\"looker_backup\", \"source_dataset\":\"looker\",\"table_names\":[\"brand\",\"excode1\",\"excode2\",\"item\",\"jan\",\"maker\",\"member\",\"office\",\"old_new_id\",\"JICFS_item\",\"transaction\",\"transaction_summary\",\"update\"]}"  \
+    --project=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --oidc-service-account-email=cloud-functions-invoke@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
+
+# -----------------------------------------------BigQuery データセット
+# BigQueryのデータセットlookerを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq --location=US mk -d jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker']
+
+# BigQueryのデータセットlooker_procedureを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq --location=US mk -d jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker_procedure']
+
+# BigQueryのデータセットtmpを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq --location=US mk -d jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):tmp']
+
+# -----------------------------------------------BigQuery テーブル
+# BigQueryのテーブルlooker.brandを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.brand ./settings/brand/schema.json']
+
+# BigQueryのテーブルlooker.itemを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.item ./settings/item/schema.json']
+
+# BigQueryのテーブルlooker.jan_sourceを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.jan_source ./settings/jan/schema.json']
+
+# BigQueryのテーブルlooker.SOO_itemを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.SOO_item ./settings/SOO_item/schema.json']
+
+# BigQueryのテーブルlooker.makerを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.maker ./settings/maker/schema.json']
+
+# BigQueryのテーブルlooker.member_sourceを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.member_source ./settings/member/schema.json']
+
+# BigQueryのテーブルlooker.officeを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.office ./settings/office/schema.json']
+
+# BigQueryのテーブルlooker.old_new_id_sourceを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.old_new_id_source ./settings/old_new_id/schema.json']
+
+# BigQueryのテーブルlooker.transaction_sourceを作成
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq mk --table --time_partitioning_type=DAY jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV):looker.transaction_source ./settings/transaction/schema.json']
+
+# -----------------------------------------------BigQuery Procedure
+# jan_table_createをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/jan_table_create.sql']
+
+# looker_procedure.jan_table_create()を実行
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) --use_legacy_sql=false "CALL looker_procedure.jan_table_create()"']
+
+# jan_delete_duplicationをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/jan_delete_dupulication.sql']
+
+# jan_mergeをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/jan_merge.sql']
+
+# member_table_createをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_table_create.sql']
+
+# create_new_old_idをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/create_old_new_id.sql']
+
+# looker_procedure.create_new_old_id()を実行
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) --use_legacy_sql=false "CALL looker_procedure.create_new_old_id()"']
+
+# old_new_id_merge_firstをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/old_new_id_merge_first.sql']
+
+# old_new_id_merge_secondをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/old_new_id_merge_second.sql']
+
+# transaction_source_mergeをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/transaction_source_merge.sql']
+
+# transaction_createをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/transaction_create.sql']
+
+# looker_procedure.transaction_create()を実行
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) --use_legacy_sql=false "CALL looker_procedure.transaction_create()"']
+
+# transaction_summaryをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/transaction_summary.sql']
+
+# update_table_createをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/update_table_create.sql']
+
+# looker_procedure.update_table_create()を実行
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) --use_legacy_sql=false "CALL looker_procedure.update_table_create()"']
+
+# insert_updateをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/insert_update.sql']
+
+# retryをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/retry.sql']
+
+# scripting_procedureをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/scripting_procedure.sql']
+
+# scripting_retry_procedureをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/scripting_retry_procedure.sql']
+
+# delete_old_data_monthly_procedureをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/delete_old_data_monthly.sql']
+
+# -----------------------------------------------BigQuery Scheduled Query
+# Scheduled Queryのcreate_pos_data(scripting_procedure.sql)をデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    bq mk --transfer_config \
+    --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --display_name=create_pos_data \
+    --data_source=scheduled_query \
+    --params='{"query": "CALL looker_procedure.scripting_procedure();"}' \
+    --schedule="everyday 22:00" \
+    --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
+
+# Scheduled Queryのcreate_pos_data_retry1(scripting_retry_procedure.sql)をデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    bq mk --transfer_config \
+    --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --display_name=create_pos_data_retry1 \
+    --data_source=scheduled_query \
+    --params='{"query": "CALL looker_procedure.scripting_retry_procedure();"}' \
+    --schedule="everyday 22:40" \
+    --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
+
+# Scheduled Queryのcreate_pos_data_retry2(scripting_retry_procedure.sql)をデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    bq mk --transfer_config \
+    --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --display_name=create_pos_data_retry2 \
+    --data_source=scheduled_query \
+    --params='{"query": "CALL looker_procedure.scripting_retry_procedure();"}' \
+    --schedule="everyday 23:20" \
+    --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
+
+# Scheduled Queryのdelete_transaction_source_monthly(delete_old_data_monthly.sql)をデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    bq mk --transfer_config \
+    --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
+    --display_name=delete_transaction_source_monthly \
+    --data_source=scheduled_query \
+    --params='{"query": "CALL looker_procedure.delete_old_data_monthly();"}' \
+    --schedule="first day of month 18:00" \
+    --location=US \
+    --service_account_name=bq-scheduled-query-$(cat _ENV)@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
+
+options:
+  env: [PYTHONIOENCODING=utf-8]
