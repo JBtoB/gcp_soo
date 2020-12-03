@@ -175,3 +175,24 @@ $ bq mk --transfer_config \
 --location=US \
 --service_account_name=${service_account_name}
 ```
+
+## Cloud Build 手動実行方法
+```
+# Cloud Buildを実行させるプロジェクトを指定
+project_id=[Cloud Buildを実行させるGCPプロジェクトID]
+
+# Cloud Build 設定ファイルを指定
+# 初回環境構築の場合: create_jbtob_dwh_etl.yaml
+# 更新の場合: update_jbtob_dwh_etl.yaml 
+config_file=[Cloud Build設定ファイル名]
+
+# タグ名を指定
+# 初回環境構築の場合: create-${初回構築をするGCPプロジェクトID}-YYYYmmdd-${その日のtagのpush回数}
+# 更新の場合: update-${更新するGCPプロジェクトID}-YYYYmmdd-${その日のtagのpush回数}
+# 例: tag_name="update-jbtob-looker-smpanel-prd-20200801-1"
+tag_name="[ダグ名]"
+
+gcloud builds submit --project=${project_id} \
+--config=${config_file} \
+--substitutions=TAG_NAME=${tag_name}  .
+```
