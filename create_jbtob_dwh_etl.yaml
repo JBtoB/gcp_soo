@@ -157,6 +157,16 @@ steps:
   entrypoint: 'bash'
   args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_table_create.sql']
 
+# member_delete_duplicationをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_delete_duplication.sql']
+
+# member_mergeをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_merge.sql']
+
 # create_new_old_idをデプロイ
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
