@@ -65,7 +65,7 @@ steps:
     --uri=$(cat _BQ_COPY_JOB_URL) \
     --http-method=POST \
     --time-zone=Asia/Tokyo \
-    --message-body="{\"target_project_id\":\"jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)\", \"target_dataset\":\"looker_backup\", \"source_dataset\":\"looker\",\"table_names\":[\"brand\",\"excode1\",\"excode2\",\"item\",\"jan\",\"maker\",\"member\",\"office\",\"old_new_id\",\"JICFS_item\",\"transaction\",\"transaction_summary\",\"update\"]}"  \
+    --message-body="{\"target_project_id\":\"jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)\", \"target_dataset\":\"looker_backup\", \"source_dataset\":\"looker\",\"table_names\":[\"brand\",\"item\",\"jan\",\"maker\",\"member\",\"office\",\"old_new_id\",\"SOO_item\",\"transaction\",\"transaction_summary\",\"update\"]}"  \
     --project=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV) \
     --oidc-service-account-email=cloud-functions-invoke@jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV).iam.gserviceaccount.com
 
@@ -156,6 +156,16 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_table_create.sql']
+
+# member_delete_duplicationをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_delete_duplication.sql']
+
+# member_mergeをデプロイ
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args: ['-c', 'bq query --project_id=jbtob-looker-$(cat _JBTOB_PROJECT_NAME)-$(cat _ENV)  --use_legacy_sql=false < ./sql/Procedure/member_merge.sql']
 
 # create_new_old_idをデプロイ
 - name: 'gcr.io/cloud-builders/gcloud'
