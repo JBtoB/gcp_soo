@@ -8,6 +8,5 @@ BEGIN
     FROM
       `looker.old_new_id` AS id
     WHERE
-      tran.member = id.old_ID
-    AND id.old_ID < id.new_ID;
+      tran.member = id.old_ID;
 END;    
